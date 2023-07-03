@@ -10,4 +10,7 @@ export interface IAppConfig {
 export class Post {
 	@IsDefined()
 	title: string;
+
+	@IsDefined()
+	content: string;
 }

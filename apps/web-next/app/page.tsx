@@ -1,4 +1,4 @@
-import { add } from 'core';
+import { add } from '@core';
 import { Button, Header } from 'ui';
 
 export default function Page() {

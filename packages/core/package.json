@@ -5,10 +5,7 @@
   "main": "src/index.ts",
   "types": "src/index.ts",
   "type": "module",
-  "scripts": {
-    "dev": "tsup src/index.ts --dts --watch",
-    "build": "tsup src/index.ts --dts --minify"
-  },
+  "scripts": {},
   "dependencies": {
     "typescript": "^5.1.6"
   },

@@ -1,23 +1,24 @@
 import { NestFactory } from '@nestjs/core';
-import { add, type IAppConfig, subtract, Post } from '@core';
+import { ValidationPipe, VersioningType } from '@nestjs/common';
 
 import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  const config: IAppConfig = {
-    port: 5000,
-  };
+  app.enableVersioning({
+    type: VersioningType.URI,
+  });
 
-  const post = new Post();
+  app.useGlobalPipes(
+    new ValidationPipe({ forbidNonWhitelisted: true, whitelist: true }),
+  );
 
-  post.title = 'Hello World';
-
-  post.content = 'This is a post';
-
-  console.log(config, add(1, 2), subtract(3, 1), post.title, post.content);
+  app.enableCors();
 
   await app.listen(5000);
+
+  console.log(`Application is running on: ${await app.getUrl()}`);
 }
-bootstrap();
+
+bootstrap().then((r) => r);

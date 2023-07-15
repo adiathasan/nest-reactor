@@ -1,13 +1,33 @@
 {
-	"extends": "tsconfig/nextjs.json",
-	"compilerOptions": {
-		"plugins": [{ "name": "next" }],
-		"experimentalDecorators": true,
-		"emitDecoratorMetadata": true,
-		"paths": {
-			"@core": ["../../packages/core/src"]
-		}
-	},
-	"include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-	"exclude": ["node_modules"]
+  "extends": "tsconfig/nextjs.json",
+  "compilerOptions": {
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "paths": {
+      "@/core": [
+        "../../packages/core/src"
+      ],
+      "@/ui": [
+        "../../packages/ui/src"
+      ],
+      "@/components/*": [
+        "./app/components/*"
+      ]
+    }
+  },
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    "dist/types/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
 }

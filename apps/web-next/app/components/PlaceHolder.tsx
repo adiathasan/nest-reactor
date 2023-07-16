@@ -3,7 +3,9 @@ import { useQuery } from "@tanstack/react-query";
 
 export function PlaceHolder(_props: {}) {
   const { data, isLoading } = useQuery(["todos"], () => {
-    return fetch("http://localhost:5000/user").then((res) => res.json());
+    return fetch("http://localhost:5000/api/v1/user/list").then((res) =>
+      res.json()
+    );
   });
 
   if (isLoading) {

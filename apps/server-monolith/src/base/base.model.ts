@@ -10,3 +10,6 @@ export const BaseSchema = (schemaOptions?: SchemaOptions) => {
     timestamps: true,
   });
 };
+
+@Schema()
+export class BaseModel {}

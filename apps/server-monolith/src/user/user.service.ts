@@ -5,15 +5,21 @@ import { Injectable, OnApplicationBootstrap } from '@nestjs/common';
 import { Model } from 'mongoose';
 import * as bcrypt from 'bcrypt';
 
-import { User } from './user.model';
+import { User } from './model/user.model';
 import { usersSeed } from '@server/user/seed/userSeed';
+import { BaseService } from '@server/base/base.service';
 
 @Injectable()
-export class UserService implements OnApplicationBootstrap {
+export class UserService
+  extends BaseService<User>
+  implements OnApplicationBootstrap
+{
   constructor(
     @InjectModel(User.name) private userModel: Model<User>,
     private configService: ConfigService,
-  ) {}
+  ) {
+    super(userModel);
+  }
 
   onApplicationBootstrap() {
     return this.seed();

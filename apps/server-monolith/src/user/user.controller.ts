@@ -1,16 +1,17 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Get, Post } from '@nestjs/common';
 
-import { User } from '@server/user/user.model';
+import { User } from '@server/user/model/user.model';
 import { UserService } from './user.service';
 import { CreateUserDto } from '@/core';
+import { RouteControllerV1 } from '@server/base/decorators/controller.decorator';
+import { BaseController } from '@server/base/base.controller';
 
-@Controller('user')
-export class UserController {
-  constructor(private readonly userService: UserService) {}
-
-  @Get()
-  async findAll(): Promise<User[]> {
-    return this.userService.findAll();
+@RouteControllerV1({
+  path: 'user',
+})
+export class UserController extends BaseController<User> {
+  constructor(private readonly userService: UserService) {
+    super(userService);
   }
 
   @Post()

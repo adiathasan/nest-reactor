@@ -1,4 +1,4 @@
-import { Body, Get, Post } from '@nestjs/common';
+import { Body, Post } from '@nestjs/common';
 
 import { User } from '@server/user/model/user.model';
 import { UserService } from './user.service';

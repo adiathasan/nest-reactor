@@ -9,11 +9,17 @@ export const createQueryClient = <
 ): {
   [KModule in keyof TRouter]: {
     [KRoute in keyof TRouter[KModule]]: TRouter[KModule][KRoute] extends Partial<{
-      method: "GET";
+      method: infer TMethod extends "GET";
+      dto: infer TDto; // at first, don't shallow the dto
     }>
-      ? {
-          useQuery: (props: { name: string }) => void;
-        }
+      ? // now narrow down the type of dto
+        TDto extends abstract new (...args: any) => any
+        ? {
+            useQuery: (props?: InstanceType<TDto>) => void;
+          }
+        : {
+            useQuery: () => void;
+          }
       : {
           useMutation: () => void;
         };
@@ -26,7 +32,7 @@ export const createQueryClient = <
         {
           get: (target, key) => {
             return {
-              useQuery: ({ name }: { name: string }) => {
+              useQuery: (props?: any) => {
                 console.log("useQuery", { target, key, _target, _key, name });
               },
               useMutation: () => {

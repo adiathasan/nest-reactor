@@ -9,9 +9,12 @@ export function PlaceHolder(_props: {}) {
     );
   });
 
-  api.post.list.useQuery({
-    name: "todos",
+  api.user.list.useQuery({
+    page: 1,
+    limit: 10,
   });
+
+  api.user.create.useMutation();
 
   if (isLoading) {
     return <h2>Loading...</h2>;

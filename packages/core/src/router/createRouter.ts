@@ -24,11 +24,20 @@ const composeRoutes = <T extends object>(routes: { [K in keyof T]: T[K] }) => {
  * 2. Compose routers
  */
 
-export class Base {}
+export class Base {
+  name: string;
+  age: number;
+}
+
+export class Pagination {
+  page: number;
+  limit: number;
+}
 
 const userRouter = createRouter({
   list: {
     method: "GET",
+    dto: Pagination,
   },
   create: {
     method: "POST",

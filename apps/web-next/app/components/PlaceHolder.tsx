@@ -1,6 +1,6 @@
 import React from "react";
+import { api } from "@/core";
 import { useQuery } from "@tanstack/react-query";
-import { api } from "core/src/query/createQueryClient";
 
 export function PlaceHolder(_props: {}) {
   const { data, isLoading } = useQuery<{}>(["todos"], () => {

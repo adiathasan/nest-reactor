@@ -3,8 +3,8 @@ import { Body, Post } from '@nestjs/common';
 import { User } from '@server/user/model/user.model';
 import { UserService } from './user.service';
 import { CreateUserDto } from '@/core';
-import { RouteControllerV1 } from '@server/base/decorators/controller.decorator';
 import { BaseController } from '@server/base/base.controller';
+import { RouteControllerV1 } from '@server/base/decorators/controller.decorator';
 
 @RouteControllerV1({
   path: 'user',

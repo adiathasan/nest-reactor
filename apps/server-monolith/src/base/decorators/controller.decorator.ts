@@ -1,6 +1,12 @@
 import { Controller, ControllerOptions } from '@nestjs/common';
 
-export const RouteControllerV1 = (options: ControllerOptions) => {
+import { ModuleRoutePath } from 'core/src/router/createRouter';
+
+export interface RouteControllerOptions extends ControllerOptions {
+  path: ModuleRoutePath;
+}
+
+export const RouteControllerV1 = (options: RouteControllerOptions) => {
   return Controller({
     ...options,
     version: '1',

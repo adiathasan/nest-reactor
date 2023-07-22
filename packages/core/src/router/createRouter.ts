@@ -1,14 +1,20 @@
 import { CreateUserDto } from "../module/user/dto/create-user.dto";
+import { Pagination } from "../commons/pagination";
+import { User } from "server-monolith/dist/apps/server-monolith/src/user/model/user.model";
 
 export type Method = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
-export type RouteObj = { method: Method; dto?: new () => any };
+export type IRoute = {
+  method: Method;
+  dto?: new () => any;
+  returnedSchema?: new () => any;
+};
 
-export type Routes<T extends { [x: string]: RouteObj }> = {
+export type Routes<T extends { [x: string]: IRoute }> = {
   [K in keyof T]: T[K];
 };
 
-export const createRouter = <T extends { [x: string]: RouteObj }>(
+export const createRouter = <T extends { [x: string]: IRoute }>(
   routes: Routes<T>
 ) => {
   return routes;
@@ -29,15 +35,16 @@ export class Base {
   age: number;
 }
 
-export class Pagination {
-  page: number;
-  limit: number;
+class UserQuery extends Pagination {
+  name?: string;
+  age?: number;
 }
 
 const userRouter = createRouter({
   list: {
     method: "GET",
-    dto: Pagination,
+    dto: UserQuery,
+    returnedSchema: User,
   },
   create: {
     method: "POST",
@@ -63,6 +70,8 @@ const router = composeRoutes({
 export type AppRouter = typeof router;
 
 export type ModuleRoutePath = keyof AppRouter;
+
+export type ApiPath = keyof AppRouter[ModuleRoutePath];
 
 // router.user.userList;
 // router.user.createUser;

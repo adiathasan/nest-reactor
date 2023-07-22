@@ -8,6 +8,7 @@
   "scripts": {},
   "dependencies": {
     "@tanstack/react-query": "^4.29.23",
+    "axios": "^1.4.0",
     "typescript": "^5.1.6"
   },
   "devDependencies": {

@@ -7,7 +7,7 @@ export class BaseController<IModel extends BaseModel> {
   constructor(private readonly baseService: BaseService<IModel>) {}
 
   @Get('list')
-  async findAll(): Promise<IModel[]> {
+  async findAll() {
     return this.baseService.findAll();
   }
 

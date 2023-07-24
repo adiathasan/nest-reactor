@@ -1,8 +1,17 @@
-import { AppRouter } from "../router/createRouter";
-import { UseQueryResult } from "@tanstack/react-query";
-import { ApiError } from "../http/http-client";
+import {
+  QueryClient,
+  QueryObserverOptions,
+  QueryOptions,
+  useMutation,
+  UseMutationOptions,
+  UseMutationResult,
+  useQuery,
+  UseQueryResult,
+} from "@tanstack/react-query";
 import { AxiosResponse } from "axios";
-import { Pagination } from "../commons/pagination";
+import { ApiError, httpClient } from "../http/http-client";
+import { ModuleRoutePath } from "../router/createRouter";
+import { IRoute, Routes } from "../lib/composables";
 
 export interface CreateQueryClientOptions {}
 
@@ -14,54 +23,144 @@ export type CreateQueryClientReturn<
   [KModule in keyof TRouter]: {
     [KRoute in keyof TRouter[KModule]]: TRouter[KModule][KRoute] extends Partial<{
       method: infer TMethod extends "GET";
-      dto: infer TDto; // at first, don't shallow the dto
+      dto: infer TDto extends abstract new (...args: any) => any;
       returnedSchema: infer TReturnedSchema extends abstract new (
         ...args: any
       ) => any;
     }>
-      ? // now narrow down the type of dto
-        TDto extends abstract new (...args: any) => any
-        ? {
-            useQuery: (
-              props?: UseQueryProps<InstanceType<TDto>>
-            ) => UseQueryResult<
-              AxiosResponse<{
-                result: {
-                  data: InstanceType<TReturnedSchema>[];
-                  pagination: Pagination;
-                };
-              }>,
-              ApiError
-            >;
-          }
-        : {
-            useQuery: () => void;
-          }
-      : {
-          useMutation: () => void;
-        };
+      ? {
+          useQuery: (
+            props?: UseQueryProps<InstanceType<TDto>>
+          ) => UseQueryResult<
+            AxiosResponse<{
+              result: InstanceType<TReturnedSchema>;
+            }>,
+            ApiError
+          >;
+        }
+      : TRouter[KModule][KRoute] extends Partial<{
+          method: infer TMethod extends "GET";
+          returnedSchema: infer TReturnedSchema extends abstract new (
+            ...args: any
+          ) => any;
+        }>
+      ? {
+          useQuery: (props: {
+            options?: QueryOptions;
+            id?: string;
+          }) => UseQueryResult<
+            AxiosResponse<{
+              result: InstanceType<TReturnedSchema>;
+            }>,
+            ApiError
+          >;
+        }
+      : TRouter[KModule][KRoute] extends Partial<{
+          method: infer TMethod extends "POST" | "PUT" | "DELETE" | "PATCH";
+          dto: infer TDto extends abstract new (...args: any) => any;
+          returnedSchema: infer TReturnedSchema extends abstract new (
+            ...args: any
+          ) => any;
+        }>
+      ? {
+          useMutation: (options?: UseMutationOptions) => UseMutationResult<
+            AxiosResponse<{
+              result: InstanceType<TReturnedSchema>;
+            }>,
+            ApiError,
+            TRouter[KModule][KRoute]["method"] extends "DELETE"
+              ? { id: string }
+              : TRouter[KModule][KRoute]["method"] extends "POST"
+              ? { data: InstanceType<TDto> }
+              : {
+                  id: string;
+                  data: InstanceType<TDto>;
+                }
+          >;
+        }
+      : never;
   };
 };
 
 export type UseQueryProps<TQuery> = {
   query?: TQuery;
+  options?: QueryObserverOptions;
+  id?: string;
 };
 
 export const createQueryClient = <
   TRouter extends { [K in keyof TRouter]: TRouter[K] }
->(
-  _options?: CreateQueryClientOptions
-) => {
+>({
+  router,
+}: {
+  router: TRouter;
+  options?: CreateQueryClientOptions;
+  queryClient: QueryClient;
+}) => {
   return new Proxy(noop, {
-    get: (_target, _key) => {
+    get: (_target, moduleName: ModuleRoutePath) => {
       return new Proxy(noop, {
-        get: (_target, key) => {
+        get: (_target, path: string) => {
           return {
-            useQuery: <T>(props?: UseQueryProps<T>) => {
-              console.log("useQuery", { key, _target, _key });
+            useQuery: ({ id, query, options }: UseQueryProps<{}> = {}) => {
+              const queryKey =
+                query || !id
+                  ? [`${moduleName}-${path}`, query]
+                  : [`${moduleName}-${id ?? "paused"}`];
+
+              return useQuery({
+                ...options,
+                enabled:
+                  typeof options?.enabled !== "undefined"
+                    ? options.enabled
+                    : true,
+                queryKey,
+                queryFn: () => {
+                  return httpClient({
+                    module: {
+                      name: moduleName,
+                      path: id ? `:id` : path,
+                    },
+                    method: "GET",
+                    query,
+                    pathParams: id
+                      ? {
+                          id,
+                        }
+                      : undefined,
+                  });
+                },
+              });
             },
-            useMutation: () => {
-              console.log("useMutation", { key, _target, _key });
+            useMutation: (options?: UseMutationOptions<any, any, any>) => {
+              return useMutation({
+                mutationFn: (props: { data: any; id: string }) => {
+                  const { data, id } = props;
+
+                  const method = (
+                    router[moduleName as keyof TRouter] as Routes<{
+                      [x: string]: IRoute;
+                    }>
+                  )[path].method;
+
+                  return httpClient({
+                    module: {
+                      name: moduleName,
+                      path: id ? `:id` : undefined,
+                    },
+                    method,
+                    axiosConfig: {
+                      data,
+                    },
+                    pathParams: id
+                      ? {
+                          id,
+                        }
+                      : undefined,
+                  });
+                },
+                ...options,
+              });
             },
           };
         },
@@ -69,9 +168,3 @@ export const createQueryClient = <
     },
   }) as unknown as CreateQueryClientReturn<TRouter>;
 };
-
-/**
- * api - module - name -
- * api.user.userList
- */
-export const api = createQueryClient<AppRouter>();

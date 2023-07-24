@@ -1,5 +1,8 @@
 import { QueryClient } from "@tanstack/react-query";
 
+import { appRouter } from "../router/createRouter";
+import { createQueryClient } from "./createQueryClient";
+
 export const queryConfig = {
   client: new QueryClient({
     defaultOptions: {
@@ -10,3 +13,12 @@ export const queryConfig = {
     },
   }),
 };
+
+/**
+ * api - module - name -
+ * api.user.userList
+ */
+export const api = createQueryClient({
+  router: appRouter,
+  queryClient: queryConfig.client,
+});

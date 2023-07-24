@@ -1,6 +1,6 @@
 import { RoleEnum } from "../../../role/RoleEnum";
 
-export interface UserResponse {
+export class UserResponse {
   id: string;
 
   firstName: string;

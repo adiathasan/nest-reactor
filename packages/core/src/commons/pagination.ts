@@ -7,3 +7,9 @@ export class Pagination {
 
   totalPages?: number;
 }
+
+export class PaginatedResponse<T> {
+  data: T[];
+
+  pagination?: Pagination;
+}

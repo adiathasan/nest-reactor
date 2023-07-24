@@ -1,9 +1,9 @@
-import { CreateUserDto } from '@/core';
+import * as bcrypt from 'bcrypt';
+import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
+import { CreateUserDto } from '@/core';
 import { ConfigService } from '@nestjs/config';
 import { Injectable, OnApplicationBootstrap } from '@nestjs/common';
-import { Model } from 'mongoose';
-import * as bcrypt from 'bcrypt';
 
 import { User } from './model/user.model';
 import { usersSeed } from '@server/user/seed/userSeed';
@@ -25,10 +25,6 @@ export class UserService
     return this.seed();
   }
 
-  async findAll(): Promise<User[]> {
-    return this.userModel.find().exec();
-  }
-
   async create(createUserDto: CreateUserDto): Promise<User> {
     const createdUser = new this.userModel(createUserDto);
     createdUser.password = await bcrypt.hash(
@@ -40,7 +36,7 @@ export class UserService
   }
 
   async seed() {
-    if ((await this.findAll()).length > 0) {
+    if ((await this.findAll())?.data.length > 0) {
       return [];
     }
 

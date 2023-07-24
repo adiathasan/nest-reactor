@@ -1,9 +1,10 @@
 import axios, { AxiosError, AxiosRequestConfig, Method } from "axios";
 
 import { Pagination } from "../commons/pagination";
-import { ApiPath, ModuleRoutePath } from "../router/createRouter";
 import { getLocalStorage } from "../storage/localStorage";
 import { LocalStorageKeys } from "../storage/LocalStorageKeys";
+import { ApiPath, ModuleRoutePath } from "../router/createRouter";
+import { LooseStringAutoComplete } from "../commons/misc-types";
 
 export type Auth = {
   token?: {
@@ -13,19 +14,7 @@ export type Auth = {
 };
 
 export interface Filter {
-  [key: string]: {
-    value: string | number | boolean | null;
-    operator:
-      | "$eq"
-      | "$ne"
-      | "$gt"
-      | "$gte"
-      | "$lt"
-      | "$lte"
-      | "$in"
-      | "$nin"
-      | "$regex";
-  };
+  [key: string]: any;
 }
 
 export type ApiError = AxiosError<{
@@ -37,14 +26,14 @@ export type ApiError = AxiosError<{
 export interface HttpOptions {
   module?: {
     name: ModuleRoutePath;
-    path?: ApiPath | Omit<string, ApiPath>;
+    path?: LooseStringAutoComplete<ApiPath>;
   };
   method?: Method;
   path?: string;
   pathParams?: Record<string, string>;
   axiosConfig?: AxiosRequestConfig<any>;
   pagination?: Pagination;
-  filter?: Filter;
+  query?: Filter;
 }
 
 const BASE_API_URL = "http://localhost:5000";
@@ -66,7 +55,7 @@ const mapPathParams = (path: string, pathParams?: Record<string, string>) => {
 export const httpClient = async <T>(options?: HttpOptions) => {
   const { module, method, path } = options ?? {};
 
-  let url = `${BASE_API_URL}/v1`;
+  let url = `${BASE_API_URL}/api/v1`;
 
   if (module) {
     url = url + `/${module.name}`;
@@ -92,23 +81,10 @@ export const httpClient = async <T>(options?: HttpOptions) => {
     };
   }
 
-  if (options && options.filter) {
-    const filters = Object.keys(options.filter).reduce((acc, key) => {
-      const filter = options.filter?.[key];
-
-      if (!filter) {
-        return acc;
-      }
-
-      return {
-        ...acc,
-        [`filter.${key}`]: `${filter.operator}:${filter.value}`,
-      };
-    }, {});
-
+  if (options && options.query) {
     params = {
       ...params,
-      ...filters,
+      ...options.query,
     };
   }
 

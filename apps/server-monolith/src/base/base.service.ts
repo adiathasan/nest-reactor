@@ -5,8 +5,11 @@ import { NotFoundException } from '@nestjs/common';
 export class BaseService<TModel extends BaseModel> {
   constructor(protected readonly model: Model<TModel>) {}
 
-  async findAll(): Promise<TModel[]> {
-    return this.model.find();
+  async findAll() {
+    const data = await this.model.find();
+    return {
+      data,
+    };
   }
 
   async findOne(id: string): Promise<TModel> {

@@ -23,6 +23,7 @@
     "packages/*"
   ],
   "dependencies": {
+    "@nestjs/swagger": "^7.1.2",
     "class-validator": "^0.14.0"
   }
 }

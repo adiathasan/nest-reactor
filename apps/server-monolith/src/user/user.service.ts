@@ -1,7 +1,7 @@
 import * as bcrypt from 'bcrypt';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
-import { CreateUserDto } from '@/core';
+import { CreateUserDto, UpdateUserDto } from '@/core';
 import { ConfigService } from '@nestjs/config';
 import { Injectable, OnApplicationBootstrap } from '@nestjs/common';
 
@@ -33,6 +33,23 @@ export class UserService
     );
 
     return createdUser.save();
+  }
+
+  async update(id: string, updateUserDto: UpdateUserDto): Promise<User> {
+    const user = await this.userModel.findById(id);
+
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    Object.assign(user, updateUserDto);
+
+    if (updateUserDto.password) {
+      const rounds = this.configService.get<number>('bcrypt.rounds') ?? 10;
+      user.password = await bcrypt.hash(updateUserDto.password, rounds);
+    }
+
+    return user.save();
   }
 
   async seed() {

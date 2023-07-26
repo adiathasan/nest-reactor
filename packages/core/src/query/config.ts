@@ -1,7 +1,7 @@
 import { QueryClient } from "@tanstack/react-query";
 
-import { appRouter } from "../router/createRouter";
-import { createQueryClient } from "./createQueryClient";
+import { AppRouter, appRouter } from "../router/createRouter";
+import { createQueryProxyClient } from "./createQueryProxyClient";
 
 export const queryConfig = {
   client: new QueryClient({
@@ -18,7 +18,7 @@ export const queryConfig = {
  * api - module - name -
  * api.user.userList
  */
-export const api = createQueryClient({
-  router: appRouter,
+export const api = createQueryProxyClient<AppRouter>({
+  // router: appRouter,
   queryClient: queryConfig.client,
 });

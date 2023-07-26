@@ -11,18 +11,17 @@ import {
 import { AxiosResponse } from "axios";
 import { ApiError, httpClient } from "../http/http-client";
 import { ModuleRoutePath } from "../router/createRouter";
-import { IRoute, Routes } from "../lib/composables";
 
 export interface CreateQueryClientOptions {}
 
 const noop = () => {};
 
-export type CreateQueryClientReturn<
+export type CreateQueryProxyClientReturn<
   TRouter extends { [K in keyof TRouter]: TRouter[K] }
 > = {
   [KModule in keyof TRouter]: {
     [KRoute in keyof TRouter[KModule]]: TRouter[KModule][KRoute] extends Partial<{
-      method: infer TMethod extends "GET";
+      method: infer _TMethod extends "GET";
       dto: infer TDto extends abstract new (...args: any) => any;
       returnedSchema: infer TReturnedSchema extends abstract new (
         ...args: any
@@ -39,15 +38,15 @@ export type CreateQueryClientReturn<
           >;
         }
       : TRouter[KModule][KRoute] extends Partial<{
-          method: infer TMethod extends "GET";
+          method: infer _TMethod extends "GET";
           returnedSchema: infer TReturnedSchema extends abstract new (
             ...args: any
           ) => any;
         }>
       ? {
           useQuery: (props: {
-            options?: QueryOptions;
             id?: string;
+            options?: QueryOptions;
           }) => UseQueryResult<
             AxiosResponse<{
               result: InstanceType<TReturnedSchema>;
@@ -56,7 +55,7 @@ export type CreateQueryClientReturn<
           >;
         }
       : TRouter[KModule][KRoute] extends Partial<{
-          method: infer TMethod extends "POST" | "PUT" | "DELETE" | "PATCH";
+          method: infer _TMethod extends "POST" | "PUT" | "DELETE" | "PATCH";
           dto: infer TDto extends abstract new (...args: any) => any;
           returnedSchema: infer TReturnedSchema extends abstract new (
             ...args: any
@@ -88,12 +87,9 @@ export type UseQueryProps<TQuery> = {
   id?: string;
 };
 
-export const createQueryClient = <
+export const createQueryProxyClient = <
   TRouter extends { [K in keyof TRouter]: TRouter[K] }
->({
-  router,
-}: {
-  router: TRouter;
+>({}: {
   options?: CreateQueryClientOptions;
   queryClient: QueryClient;
 }) => {
@@ -137,11 +133,7 @@ export const createQueryClient = <
                 mutationFn: (props: { data: any; id: string }) => {
                   const { data, id } = props;
 
-                  const method = (
-                    router[moduleName as keyof TRouter] as Routes<{
-                      [x: string]: IRoute;
-                    }>
-                  )[path].method;
+                  const method = !id ? "POST" : !data ? "DELETE" : "PUT";
 
                   return httpClient({
                     module: {
@@ -166,5 +158,5 @@ export const createQueryClient = <
         },
       });
     },
-  }) as unknown as CreateQueryClientReturn<TRouter>;
+  }) as unknown as CreateQueryProxyClientReturn<TRouter>;
 };

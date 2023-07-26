@@ -1,5 +1,5 @@
 import React from "react";
-import { api } from "@/core";
+import { api } from "core";
 
 export function PlaceHolder(_props: {}) {
   const { data, isLoading } = api.user.list.useQuery({
@@ -13,11 +13,14 @@ export function PlaceHolder(_props: {}) {
   });
 
   const { mutate: create } = api.user.create.useMutation();
+
   const { mutate: update } = api.user.update.useMutation();
 
   if (isLoading) {
     return <h2>loading...</h2>;
   }
+
+  const boo = data?.data?.result?.data[0]?.firstName;
 
   return (
     <div>
@@ -45,11 +48,12 @@ export function PlaceHolder(_props: {}) {
           );
 
           update({
-            id: "64b2deead7cfb00f4dfe8375x",
+            id: "64b2deead7cfb00f4dfe8375",
             data: {
-              firstName: "",
-              lastName: "",
-              username: "",
+              firstName: "Kuddus",
+              lastName: "Mia",
+              username: each?.data?.result?.username,
+              password: each?.data?.result?.password,
             },
           });
         }}

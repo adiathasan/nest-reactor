@@ -13,3 +13,7 @@ export class CreateUserDto {
   @IsStrongPassword({ minLength: 8, minSymbols: 0 })
   password: string;
 }
+
+//  -> server | client ->
+
+// commons -> submodules -> core -> server -> client

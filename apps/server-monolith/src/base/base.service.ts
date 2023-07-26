@@ -13,9 +13,7 @@ export class BaseService<TModel extends BaseModel> {
   }
 
   async findOne(id: string): Promise<TModel> {
-    const data = await this.model.findOne({
-      _id: id,
-    });
+    const data = await this.model.findById(id);
 
     if (!data) {
       throw new NotFoundException(`Data with id ${id} not found`);

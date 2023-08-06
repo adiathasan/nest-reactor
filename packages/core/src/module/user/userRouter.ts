@@ -12,11 +12,12 @@ class UserQuery extends Pagination {
 export const userRouter = createRouter({
   list: {
     method: "GET",
-    dto: UserQuery,
+    query: UserQuery,
     returnedSchema: PaginatedResponse<UserResponse>,
   },
   get: {
     method: "GET",
+    mappedId: ":id",
     returnedSchema: UserResponse,
   },
   create: {

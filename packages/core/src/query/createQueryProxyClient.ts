@@ -21,33 +21,37 @@ export type CreateQueryProxyClientReturn<
   TRouter extends { [K in keyof TRouter]: TRouter[K] }
 > = {
   [KModule in keyof TRouter]: {
-    [KRoute in keyof TRouter[KModule]]: TRouter[KModule][KRoute] extends Partial<{
+    [KRoute in keyof TRouter[KModule]]: TRouter[KModule][KRoute] extends {
       method: infer _TMethod extends "GET";
-      dto: infer TDto extends abstract new (...args: any) => any;
+      query?: infer TDto extends abstract new (...args: any) => any;
       returnedSchema: infer TReturnedSchema extends abstract new (
         ...args: any
       ) => any;
-    }>
+    }
       ? {
-          useQuery: (
-            props?: UseQueryProps<InstanceType<TDto>>
-          ) => UseQueryResult<
+          useQuery: (props?: {
+            options?: QueryOptions;
+            query?: InstanceType<TDto>;
+          }) => UseQueryResult<
             AxiosResponse<{
               result: InstanceType<TReturnedSchema>;
             }>,
             ApiError
           >;
         }
-      : TRouter[KModule][KRoute] extends Partial<{
+      : TRouter[KModule][KRoute] extends {
           method: infer _TMethod extends "GET";
+          query?: infer TDto extends abstract new (...args: any) => any;
+          mappedId?: infer TMappedId extends string;
           returnedSchema: infer TReturnedSchema extends abstract new (
             ...args: any
           ) => any;
-        }>
+        }
       ? {
           useQuery: (props: {
-            id?: string;
+            id: string;
             options?: QueryOptions;
+            query?: InstanceType<TDto>;
           }) => UseQueryResult<
             AxiosResponse<{
               result: InstanceType<TReturnedSchema>;
@@ -58,12 +62,21 @@ export type CreateQueryProxyClientReturn<
       : TRouter[KModule][KRoute] extends Partial<{
           method: infer _TMethod extends "POST" | "PUT" | "DELETE" | "PATCH";
           dto: infer TDto extends abstract new (...args: any) => any;
+          query?: infer TQuery extends abstract new (...args: any) => any;
           returnedSchema: infer TReturnedSchema extends abstract new (
             ...args: any
           ) => any;
         }>
       ? {
-          useMutation: (options?: UseMutationOptions) => UseMutationResult<
+          useMutation: (props?: {
+            options?: UseMutationOptions<
+              AxiosResponse<{
+                result: InstanceType<TReturnedSchema>;
+              }>,
+              ApiError
+            >;
+            query?: InstanceType<TQuery>;
+          }) => UseMutationResult<
             AxiosResponse<{
               result: InstanceType<TReturnedSchema>;
             }>,

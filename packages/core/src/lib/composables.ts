@@ -3,6 +3,8 @@ export type Method = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 export type IRoute = {
   method: Method;
   dto?: new () => any;
+  query?: new () => any;
+  mappedId?: ":id" | ":uuid" | ":slug";
   returnedSchema?: new () => any;
 };
 

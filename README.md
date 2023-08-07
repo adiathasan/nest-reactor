@@ -6,6 +6,8 @@
 
 # Demo
 
-![Nest Reactor v0](./resource/NEST_REACTOR_DEMO.gif)
+
+https://github.com/adiathasan/nest-reactor/assets/61478071/ce6b6e10-e51c-4949-a018-554b8e137fd9?play=true
+
 
 ## v1 Coming soon...

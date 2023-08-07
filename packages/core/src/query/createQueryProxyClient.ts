@@ -1,7 +1,6 @@
 import {
   QueryClient,
   QueryObserverOptions,
-  QueryOptions,
   useMutation,
   UseMutationOptions,
   UseMutationResult,
@@ -30,7 +29,7 @@ export type CreateQueryProxyClientReturn<
     }
       ? {
           useQuery: (props?: {
-            options?: QueryOptions;
+            options?: QueryObserverOptions;
             query?: InstanceType<TDto>;
           }) => UseQueryResult<
             AxiosResponse<{
@@ -50,7 +49,7 @@ export type CreateQueryProxyClientReturn<
       ? {
           useQuery: (props: {
             id: string;
-            options?: QueryOptions;
+            options?: QueryObserverOptions;
             query?: InstanceType<TDto>;
           }) => UseQueryResult<
             AxiosResponse<{

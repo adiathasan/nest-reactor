@@ -6,7 +6,7 @@ import { Delete, Get, Param } from '@nestjs/common';
 export class BaseController<IModel extends BaseModel> {
   constructor(private readonly baseService: BaseService<IModel>) {}
 
-  @Get('list')
+  @Get()
   async findAll() {
     return this.baseService.findAll();
   }

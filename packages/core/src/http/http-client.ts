@@ -1,113 +1,119 @@
-import axios, { AxiosError, AxiosRequestConfig, Method } from "axios";
+import axios, { AxiosError, AxiosRequestConfig, Method } from 'axios';
 
-import { Pagination } from "../commons/pagination";
-import { getLocalStorage } from "../storage/localStorage";
-import { LocalStorageKeys } from "../storage/LocalStorageKeys";
-import { ApiPath, ModuleRoutePath } from "../router/createRouter";
-import { LooseStringAutoComplete } from "../commons/misc-types";
+import { Pagination } from '../commons/pagination';
+import { getLocalStorage } from '../storage/localStorage';
+import { LocalStorageKeys } from '../storage/LocalStorageKeys';
 
 export type Auth = {
-  token?: {
-    accessToken?: string;
-    expiry?: number;
-  };
+	token?: {
+		accessToken?: string;
+		expiry?: number;
+	};
 };
 
 export interface Filter {
-  [key: string]: any;
+	[key: string]: any;
 }
 
 export type ApiError = AxiosError<{
-  statusCode?: number;
-  message?: any;
-  error?: string;
+	statusCode?: number;
+	message?: any;
+	error?: string;
 }>;
 
 export interface HttpOptions {
-  module?: {
-    name: ModuleRoutePath;
-    path?: LooseStringAutoComplete<ApiPath>;
-  };
-  method?: Method;
-  path?: string;
-  pathParams?: Record<string, string>;
-  axiosConfig?: AxiosRequestConfig<any>;
-  pagination?: Pagination;
-  query?: Filter;
+	module?: {
+		name: string;
+		path?: string;
+	};
+	method?: Method;
+	path?: string;
+	pathParams?: Record<string, string>;
+	axiosConfig?: AxiosRequestConfig;
+	pagination?: Pagination;
+	query?: Filter;
+	requiredAuth?: boolean;
+	baseUrl?: string;
 }
 
-const BASE_API_URL = "http://localhost:5000";
-
 const mapPathParams = (path: string, pathParams?: Record<string, string>) => {
-  if (!pathParams) {
-    return path;
-  }
+	if (!pathParams) {
+		return path;
+	}
 
-  return Object.keys(pathParams).reduce((acc, key) => {
-    if (pathParams[key] !== undefined) {
-      return acc.replace(`:${key}`, pathParams[key]!);
-    }
+	return Object.keys(pathParams).reduce((acc, key) => {
+		if (pathParams[key] !== undefined) {
+			return acc.replace(`:${key}`, pathParams[key]!);
+		}
 
-    return acc;
-  }, path);
+		return acc;
+	}, path);
 };
 
 export const httpClient = async <T>(options?: HttpOptions) => {
-  const { module, method, path } = options ?? {};
+	const { module, method, path } = options ?? {};
 
-  let url = `${BASE_API_URL}/api/v1`;
+	let url = '';
 
-  if (module) {
-    url = url + `/${module.name}`;
-  }
+	if (options?.baseUrl) {
+		url = options.baseUrl;
+	}
 
-  if (module?.path) {
-    url = url + `/${module.path}`;
-  }
+	if (module) {
+		url = url + `/${module.name}`;
+	}
 
-  if (path) {
-    url = url + `/${path}`;
-  }
+	if (module?.path) {
+		url = url + `/${module.path}`;
+	}
 
-  if (options && options.pathParams) {
-    url = mapPathParams(url, options.pathParams);
-  }
+	if (path) {
+		url = url + `${path}`;
+	}
 
-  let params = {};
+	if (options && options.pathParams) {
+		url = mapPathParams(url, options.pathParams);
+	}
 
-  if (options && options.pagination) {
-    params = {
-      ...options.pagination,
-    };
-  }
+	let params = {};
 
-  if (options && options.query) {
-    params = {
-      ...params,
-      ...options.query,
-    };
-  }
+	if (options && options.pagination) {
+		params = {
+			...options.pagination,
+		};
+	}
 
-  const token = getLocalStorage<Auth["token"]>(LocalStorageKeys.Token);
+	if (options && options.query) {
+		params = {
+			...params,
+			...options.query,
+		};
+	}
 
-  const headers: { [k: string]: string } = {
-    "Content-Type": "application/json",
-  };
+	const headers: { [k: string]: string } = {
+		'Content-Type': 'application/json',
+	};
 
-  if (token?.accessToken) {
-    headers["Authorization"] = `Bearer ${token.accessToken}`;
-  }
+	if (options?.requiredAuth) {
+		const token = getLocalStorage<Auth['token']>(LocalStorageKeys.Token);
 
-  return axios<T>({
-    url,
-    method,
-    ...options?.axiosConfig,
-    params: {
-      ...params,
-      ...options?.axiosConfig?.params,
-    },
-    headers,
-  });
+		if (!token?.accessToken) {
+			throw new Error('Token not found in local storage but :requiredAuth is true');
+		}
+
+		headers['Authorization'] = `Bearer ${token.accessToken}`;
+	}
+
+	return axios<T>({
+		url,
+		method,
+		...options?.axiosConfig,
+		params: {
+			...params,
+			...options?.axiosConfig?.params,
+		},
+		headers,
+	});
 };
 
 /**
